@@ -3,17 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\PostResource;
+use App\Interfaces\PostRepositoryInterface;
 use App\Models\Post;
 use Illuminate\Http\Request;
 
 class PostController extends Controller
 {
+
+    public function __construct(protected PostRepositoryInterface $postRepository)
+    {
+    }
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        return PostResource::collection(Post::all());
+        return PostResource::collection($this->postRepository->all());
     }
 
     /**
@@ -21,7 +26,7 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        return new PostResource(Post::create($request->all()));
+        return new PostResource($this->postRepository->create($request->all()));
     }
 
     /**
@@ -29,7 +34,7 @@ class PostController extends Controller
      */
     public function show(string $id)
     {
-        return new PostResource(Post::find($id));
+        return new PostResource($this->postRepository->find($id));
     }
 
     /**
@@ -37,9 +42,7 @@ class PostController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $post = Post::find($id);
-        $post->update($request->all());
-        return new PostResource($post);
+        return new PostResource($this->postRepository->update($request->all(), $id));
     }
 
     /**
@@ -47,7 +50,7 @@ class PostController extends Controller
      */
     public function destroy(string $id)
     {
-        Post::destroy($id);
+        $this->postRepository->delete($id);
         return response()->json(null, 204);
     }
 }
